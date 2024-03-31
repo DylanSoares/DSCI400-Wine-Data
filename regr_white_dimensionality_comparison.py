@@ -21,7 +21,6 @@ def main():
 
 
 def variance_ratio():
-    # Standardize the features
     # Perform PCA
     pca = PCA()
     pca.fit(X_scaled)
@@ -37,7 +36,7 @@ def variance_ratio():
     plt.gca().spines['left'].set_color('white')
     plt.xticks(color='white')
     plt.yticks(color='white')
-    plt.savefig(f"output/variance_ratio.png", transparent=True, bbox_inches='tight')
+    plt.savefig(f"output/regr_variance_ratio.png", transparent=True, bbox_inches='tight')
 
 
 def correlation_matrix():
@@ -55,7 +54,7 @@ def correlation_matrix():
     plt.gca().spines['left'].set_color('white')
     plt.xticks(color='white')
     plt.yticks(color='white')
-    plt.savefig(f"output/correlation_matrix.png", transparent=True, bbox_inches='tight')
+    plt.savefig(f"output/regr_correlation_matrix.png", transparent=True, bbox_inches='tight')
 
 
 def correlation_bar():
@@ -73,7 +72,7 @@ def correlation_bar():
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     plt.gca().spines['bottom'].set_color('white')
     plt.gca().spines['left'].set_color('white')
-    plt.savefig(f"output/correlation_barchart.png", transparent=True, bbox_inches='tight')
+    plt.savefig(f"output/regr_correlation_barchart.png", transparent=True, bbox_inches='tight')
 
 
 def rf_forest_correlation():
@@ -97,7 +96,7 @@ def rf_forest_correlation():
     plt.gca().spines['left'].set_color('white')
     plt.xticks(color='white')
     plt.yticks(color='white')
-    plt.savefig(f"output/feature_importance.png", transparent=True, bbox_inches='tight')
+    plt.savefig(f"output/regr_feature_importance.png", transparent=True, bbox_inches='tight')
 
 
 if __name__ == "__main__":

@@ -50,13 +50,13 @@ model_params = {
     'Lasso Regression': {'model__alpha': [0.1, 1, 10]},
     'ElasticNet Regression': {'model__alpha': [0.1, 1, 10], 'model__l1_ratio': [0.1, 0.5, 0.9]},
     'Support Vector Machine': {'model__C': [0.1, 1, 10], 'model__kernel': ['linear', 'rbf']},
-    'Decision Tree': {'model__max_depth': [None, 5, 10, 20]},
-    'Random Forest': {'model__n_estimators': [50, 100, 200]},
-    'Gradient Boosting': {'model__n_estimators': [50, 100, 200], 'model__learning_rate': [0.01, 0.1, 0.5]},
+    'Decision Tree': {'model__max_depth': [None, 5, 10, 20, 30]},
+    'Random Forest': {'model__n_estimators': [200, 300, 500]},
+    'Gradient Boosting': {'model__n_estimators': [200, 300, 500], 'model__learning_rate': [0.01, 0.1, 0.5]},
     'K-Nearest Neighbors': {'model__n_neighbors': [3, 5, 10]},
-    'XGBoost': {'model__n_estimators': [50, 100, 200], 'model__learning_rate': [0.01, 0.1, 0.5]},
-    'LightGBM': {'model__n_estimators': [50, 100, 200], 'model__learning_rate': [0.01, 0.1, 0.5]},
-    'CatBoost': {'model__iterations': [50, 100, 200], 'model__learning_rate': [0.01, 0.1, 0.5]},
+    'XGBoost': {'model__n_estimators': [100, 200, 300, 500], 'model__learning_rate': [0.01, 0.1, 0.5]},
+    'LightGBM': {'model__n_estimators': [100, 200, 300, 500], 'model__learning_rate': [0.01, 0.1, 0.5]},
+    'CatBoost': {'model__iterations': [100, 200, 300, 500], 'model__learning_rate': [0.01, 0.1, 0.5]},
     # 'Neural Network': {'model__hidden_layer_sizes': [(50,), (100,), (50, 50)], 'model__alpha': [0.0001, 0.001, 0.01],
     #                    'model__learning_rate_init': [0.0001, 0.001, 0.01], 'model__solver': ['lbfgs', 'adam']}
 }
@@ -83,12 +83,12 @@ def export_model():
     best_model_params = grid_search.best_params_
 
     # Export the best model
-    joblib.dump(best_model, f"output/model_outputs/{best_model_name}_model.pkl")
-    print(f"Best model '{best_model_name}' exported successfully.")
+    joblib.dump(best_model, f"output/model_outputs/regr_{best_model_name}_model.pkl")
+    print(f"Best model 'regr_{best_model_name}' exported successfully.")
 
-    with open(f"output/model_outputs/{best_model_name}_params.txt", "w") as f:
+    with open(f"output/model_outputs/regr_{best_model_name}_params.txt", "w") as f:
         f.write(str(best_model_params))
-    print(f"Best model parameters saved to '{best_model_name}_params.txt'.")
+    print(f"Best model parameters saved to 'regr_{best_model_name}_params.txt'.")
 
 
 def train_models():
@@ -164,7 +164,7 @@ def plot_best_model_info():
     plt.axis('off')
 
     # Save the plot as PNG
-    plt.savefig("output/best_model_info.png", bbox_inches='tight', transparent=True)
+    plt.savefig("output/regr_best_model_info.png", bbox_inches='tight', transparent=True)
 
 
 def plot_mse_pca():
@@ -182,7 +182,7 @@ def plot_mse_pca():
     plt.ylabel('Model', color='white')
     plt.tick_params(axis='x', colors='white')
     plt.tick_params(axis='y', colors='white')
-    plt.savefig(f"output/plots/mse_across_PCA.png", transparent=True, bbox_inches='tight')
+    plt.savefig(f"output/plots/regr_mse_across_PCA.png", transparent=True, bbox_inches='tight')
 
 
 def plot_models_error():
@@ -215,7 +215,7 @@ def plot_models_error():
     plt.xticks(ticks=[0.5, 1.5, 2.5, 3.5, 4.5, 5.5], labels=['MAE', 'MSE', 'RMSE', 'MSLE', 'MAPE', 'R^2'],
                color='white')
     plt.yticks(rotation=0, color='white')
-    plt.savefig(f"output/plots/model_errors.png", transparent=True, bbox_inches='tight')
+    plt.savefig(f"output/plots/regr_model_errors.png", transparent=True, bbox_inches='tight')
 
 
 if __name__ == '__main__':

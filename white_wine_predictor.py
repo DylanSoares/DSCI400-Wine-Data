@@ -101,7 +101,7 @@ class WineQualityApp(ctk.CTk):
         user_input = [entry.get() for entry in self.input_entries]
         input_data = pd.DataFrame([user_input], columns=X_columns)
         prediction = predict_quality(model, input_data)
-        self.result_label.configure(text="Predicted wine quality: {}".format(prediction))
+        self.result_label.configure(text=f"Predicted Wine Quality: {round(prediction[0])}\nRaw Prediction: {prediction[0]}", justify="left")
 
 
 # Define the features X
