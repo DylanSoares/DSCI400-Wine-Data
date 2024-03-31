@@ -24,20 +24,24 @@ data = pd.read_csv('winequality-white.csv', sep=';')
 X = data.drop(columns=['quality'])
 y = data['quality']
 
+# Set the states
+# state = 42
+state = None
+
 models = {
+    'Neural Network': MLPRegressor(early_stopping=True, random_state=state, verbose=False),
+    'XGBoost': XGBRegressor(random_state=state, verbosity=0),
+    'LightGBM': LGBMRegressor(random_state=state, verbose=-1),
+    'CatBoost': CatBoostRegressor(random_state=state, verbose=0),
     'Linear Regression': LinearRegression(),
-    'Ridge Regression': Ridge(),
-    'Lasso Regression': Lasso(),
-    'ElasticNet Regression': ElasticNet(),
+    'Ridge Regression': Ridge(random_state=state),
+    'Lasso Regression': Lasso(random_state=state),
+    'ElasticNet Regression': ElasticNet(random_state=state),
     'Support Vector Machine': SVR(),
-    'Decision Tree': DecisionTreeRegressor(random_state=42),
-    'Random Forest': RandomForestRegressor(random_state=42),
-    'Gradient Boosting': GradientBoostingRegressor(random_state=42),
+    'Decision Tree': DecisionTreeRegressor(random_state=state),
+    'Random Forest': RandomForestRegressor(random_state=state),
+    'Gradient Boosting': GradientBoostingRegressor(random_state=state),
     'K-Nearest Neighbors': KNeighborsRegressor(),
-    'XGBoost': XGBRegressor(random_state=42),
-    'LightGBM': LGBMRegressor(random_state=42),
-    'CatBoost': CatBoostRegressor(random_state=42)
-    # 'Neural Network': MLPRegressor(max_iter=500, early_stopping=True, random_state=42) ITS NOT WORTH IT
 }
 
 pca_params = {
@@ -48,22 +52,73 @@ model_params = {
     'Linear Regression': {},
     'Ridge Regression': {'model__alpha': [0.1, 1, 10]},
     'Lasso Regression': {'model__alpha': [0.1, 1, 10]},
-    'ElasticNet Regression': {'model__alpha': [0.1, 1, 10], 'model__l1_ratio': [0.1, 0.5, 0.9]},
-    'Support Vector Machine': {'model__C': [0.1, 1, 10], 'model__kernel': ['linear', 'rbf']},
-    'Decision Tree': {'model__max_depth': [None, 5, 10, 20, 30]},
-    'Random Forest': {'model__n_estimators': [200, 300, 500]},
-    'Gradient Boosting': {'model__n_estimators': [200, 300, 500], 'model__learning_rate': [0.01, 0.1, 0.5]},
-    'K-Nearest Neighbors': {'model__n_neighbors': [3, 5, 10]},
-    'XGBoost': {'model__n_estimators': [100, 200, 300, 500], 'model__learning_rate': [0.01, 0.1, 0.5]},
-    'LightGBM': {'model__n_estimators': [100, 200, 300, 500], 'model__learning_rate': [0.01, 0.1, 0.5]},
-    'CatBoost': {'model__iterations': [100, 200, 300, 500], 'model__learning_rate': [0.01, 0.1, 0.5]},
-    # 'Neural Network': {'model__hidden_layer_sizes': [(50,), (100,), (50, 50)], 'model__alpha': [0.0001, 0.001, 0.01],
-    #                    'model__learning_rate_init': [0.0001, 0.001, 0.01], 'model__solver': ['lbfgs', 'adam']}
+    'ElasticNet Regression': {
+        'model__alpha': [0.1, 1, 10],
+        'model__l1_ratio': [0.1, 0.5, 0.9]
+    },
+    'Support Vector Machine': {
+        'model__C': [0.1, 1, 10],
+        'model__kernel': ['linear', 'rbf', 'sigmoid'],
+        'model__degree': [3, 4, 5, 6]
+    },
+    'Decision Tree': {
+        'model__max_depth': [None, 5, 10, 20, 30],
+        'model__splitter': ['best', 'random'],
+        'model__criterion': ["squared_error", "friedman_mse", "absolute_error"]
+    },
+    'Random Forest': {
+        'model__n_estimators': [100, 500, 700, 1000, 1500],
+        'model__max_depth': [None, 5, 10, 20, 30]
+    },
+    'Gradient Boosting': {
+        'model__n_estimators': [200, 300, 500, 700, 1000],
+        'model__learning_rate': [0.01, 0.1, 0.5]
+    },
+    'K-Nearest Neighbors': {
+        'model__n_neighbors': [3, 5, 10]
+    },
+    'XGBoost': {
+        'model__n_estimators': [200, 300, 500, 700, 1000],
+        'model__learning_rate': [0.01, 0.1, 0.5],
+        'model__max_depth': [3, 5, 7, 9],
+        'model__min_child_weight': [1, 3, 5],
+        'model__gamma': [0, 0.1, 0.2],
+        'model__subsample': [0.6, 0.8, 1.0],
+        'model__colsample_bytree': [0.6, 0.8, 1.0],
+        'model__reg_alpha': [0, 0.1, 0.5],
+        'model__reg_lambda': [1, 1.5, 2],
+        'model__scale_pos_weight': [1, 2, 3]
+    },
+    'LightGBM': {
+        'model__n_estimators': [100, 200, 300, 500, 700, 1000],
+        'model__learning_rate': [0.01, 0.1, 0.5]
+    },
+    'CatBoost': {
+        'model__iterations': [100, 200, 300, 500, 700, 1000],
+        'model__learning_rate': [0.01, 0.1, 0.5]
+    },
+    'Neural Network': {
+        'model__hidden_layer_sizes': [(50,), (100,), (50, 50), (100, 50)],
+        'model__alpha': [0.0001, 0.001, 0.01, 0.1],
+        'model__learning_rate_init': [0.0001, 0.001, 0.01, 0.1],
+        'model__solver': ['adam'],  # lbfgs
+        'model__max_iter': [2000, 3000, 5000, 8000],
+        'model__tol': [1e-4, 1e-5, 1e-6],
+        'model__batch_size': [32, 64, 128],
+        'model__early_stopping': [True],
+        'model__validation_fraction': [0.1],
+        'model__n_iter_no_change': [10, 20, 30]
+    }
 }
 
 scoring = {
     'MSE': 'neg_mean_squared_error',
-    'MAE': 'neg_mean_absolute_error'
+    'MAE': 'neg_mean_absolute_error',
+    'R2': 'r2',
+    'Explained Variance': 'explained_variance',
+    'MSLE': 'neg_mean_squared_log_error',
+    'MAPE': 'neg_mean_absolute_percentage_error',
+    'RMSE': 'neg_root_mean_squared_error'
 }
 
 results_list = []
@@ -74,21 +129,27 @@ def main():
     plot_best_model_info()
     plot_mse_pca()
     plot_models_error()
-    export_model()
+    export_models()
 
 
-def export_model():
-    best_model = grid_search.best_estimator_
-    best_model_name = results.loc[results['MSE'].idxmin(), 'Model']
-    best_model_params = grid_search.best_params_
+def export_models(top_n=3):
+    # Assuming grid_search, results, and results dataframe are available globally
 
-    # Export the best model
-    joblib.dump(best_model, f"output/model_outputs/regr_{best_model_name}_model.pkl")
-    print(f"Best model 'regr_{best_model_name}' exported successfully.")
+    # Get the top N models
+    top_models = results.nsmallest(top_n, 'MSE')['Model']
 
-    with open(f"output/model_outputs/regr_{best_model_name}_params.txt", "w") as f:
-        f.write(str(best_model_params))
-    print(f"Best model parameters saved to 'regr_{best_model_name}_params.txt'.")
+    for model_name in top_models:
+        model_row = results.loc[results['Model'] == model_name]
+        best_model = grid_search.best_estimator_
+        best_model_params = grid_search.best_params_
+
+        # Export the best model
+        joblib.dump(best_model, f"output/model_outputs/regr_{model_name}_model_{model_row}.pkl")
+        print(f"Model 'regr_{model_name}' exported successfully.")
+
+        with open(f"output/model_outputs/regr_{model_name}_params_{model_row}.txt", "w") as f:
+            f.write(str(best_model_params))
+        print(f"Model parameters saved to 'regr_{model_name}_params_{model_row}.txt'.")
 
 
 def train_models():
@@ -97,11 +158,13 @@ def train_models():
     total_pca_components = len(pca_params['pca__n_components'])
     total_combinations = total_models * total_pca_components
 
-    # Outer progress bar for models
+    max_model_name_length = max(len(model_name) for model_name in models.keys())
     model_progress_bar = tqdm(total=total_combinations, desc='Models', )
 
     for model_name, model in models.items():
         for pca_n_components in pca_params['pca__n_components']:
+            padded_model_name = model_name.ljust(max_model_name_length)
+            model_progress_bar.set_description(f'Model: {padded_model_name}, PCA: {pca_n_components}')
             # Define pipeline with PCA and model
             pipeline = Pipeline([
                 ('scaler', StandardScaler()),
