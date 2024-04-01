@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 
 import joblib
@@ -27,8 +28,11 @@ X = data.drop(columns=['quality'])
 y = data['quality']
 
 # Set the states
-# state = 42
-state = None
+state = 42
+# state = None
+
+current_datetime = datetime.now()
+formatted_datetime = current_datetime.strftime("%Y%m%d_%H%M%S")
 
 models = {
     'Neural Network': MLPRegressor(early_stopping=True, random_state=state, verbose=False),
@@ -80,36 +84,36 @@ model_params = {
         'model__n_neighbors': [3, 5, 10]
     },
     'XGBoost': {
-        'model__n_estimators': [200, 300, 500, 700, 1000],
-        'model__learning_rate': [0.01, 0.1, 0.5],
-        'model__max_depth': [3, 5, 7, 9],
-        'model__min_child_weight': [1, 3, 5],
-        'model__gamma': [0, 0.1, 0.2],
-        'model__subsample': [0.6, 0.8, 1.0],
-        'model__colsample_bytree': [0.6, 0.8, 1.0],
-        'model__reg_alpha': [0, 0.1, 0.5],
-        'model__reg_lambda': [1, 1.5, 2],
-        'model__scale_pos_weight': [1, 2, 3]
+        'model__n_estimators': [1000, 2000],
+        'model__learning_rate': [0.01, 0.1],
+        'model__max_depth': [9, 11, 15],
+        # 'model__min_child_weight': [1, 3, 5],
+        # 'model__gamma': [0, 0.1, 0.2],
+        'model__subsample': [0.5, 0.6],
+        'model__colsample_bytree': [0.5, 0.6],
+        # 'model__reg_alpha': [0, 0.1, 0.5],
+        # 'model__reg_lambda': [1, 1.5, 2],
+        # 'model__scale_pos_weight': [1, 2, 3]
     },
     'LightGBM': {
-        'model__n_estimators': [100, 200, 300, 500, 700, 1000],
+        'model__n_estimators': [500, 700, 800, 1000],
         'model__learning_rate': [0.01, 0.1, 0.5]
     },
     'CatBoost': {
-        'model__iterations': [100, 200, 300, 500, 700, 1000],
+        'model__iterations': [300, 500, 700, 1000],
         'model__learning_rate': [0.01, 0.1, 0.5]
     },
     'Neural Network': {
-        'model__hidden_layer_sizes': [(50,), (100,), (50, 50), (100, 50)],
-        'model__alpha': [0.0001, 0.001, 0.01, 0.1],
-        'model__learning_rate_init': [0.0001, 0.001, 0.01, 0.1],
+        'model__hidden_layer_sizes': [(50,100,50), (100,), (50, 50), (100, 50), (100,100)],
+        # 'model__alpha': [0.0001, 0.001, 0.01, 0.1],
+        'model__learning_rate_init': [0.01],  # [0.0001, 0.001, 0.01, 0.1]
         'model__solver': ['adam'],  # lbfgs
-        'model__max_iter': [2000, 3000, 5000, 8000],
-        'model__tol': [1e-4, 1e-5, 1e-6],
-        'model__batch_size': [32, 64, 128],
+        'model__max_iter': [7000, 8000, 10000],
+        # 'model__tol': [1e-4, 1e-5, 1e-6],
+        'model__batch_size': [128],  # 32, 64
         'model__early_stopping': [True],
-        'model__validation_fraction': [0.1],
-        'model__n_iter_no_change': [10, 20, 30]
+        # 'model__validation_fraction': [0.1],
+        'model__n_iter_no_change': [30]  # [10, 20, 30]
     }
 }
 
@@ -118,7 +122,6 @@ scoring = {
     'MAE': 'neg_mean_absolute_error',
     'R2': 'r2',
     'Explained Variance': 'explained_variance',
-    'MSLE': 'neg_mean_squared_log_error',
     'MAPE': 'neg_mean_absolute_percentage_error',
     'RMSE': 'neg_root_mean_squared_error'
 }
@@ -131,26 +134,33 @@ def main():
     plot_best_model_info()
     plot_mse_pca()
     plot_models_error()
-    export_models()
+    export_best_model()
 
 
-def export_models(top_n=3):
+def export_best_model():
+    best_model = grid_search.best_estimator_
 
-    top_models = results.nsmallest(top_n, 'MSE')['Model']
-    current_datetime = datetime.now()
-    formatted_datetime = current_datetime.strftime("%Y%m%d_%H%M%S")
+    # Define a regular expression pattern to match the model component name
+    pattern = r"\('model', (\w+)\("
 
-    for model_name in top_models:
-        best_model = grid_search.best_estimator_
-        best_model_params = grid_search.best_params_
+    # Use re.search to find the model component name in the string
+    match = re.search(pattern, str(best_model))
+    best_model_name = match.group(1)
 
-        # Export the best model
-        joblib.dump(best_model, f"output/model_outputs/regr_{model_name}_model_{formatted_datetime}.pkl")
-        print(f"Model 'regr_{model_name}' exported successfully.")
+    best_model_params = grid_search.best_params_
 
-        with open(f"output/model_outputs/regr_{model_name}_params_{formatted_datetime}.txt", "w") as f:
-            f.write(str(best_model_params))
-        print(f"Model parameters saved to 'regr_{model_name}_params_{formatted_datetime}.txt'.")
+    joblib.dump(best_model, f"output/model_outputs/{formatted_datetime}_regr_{best_model_name}_model_BEST.pkl")
+    print(f"Best model '{formatted_datetime}_{best_model_name}' exported successfully.")
+
+    with open(f"output/model_outputs/{formatted_datetime}_regr_{best_model_name}_params_BEST.txt", "w") as f:
+        f.write(str(best_model_params))
+    print(f"Best model parameters saved to '{formatted_datetime}_regr_{best_model_name}_params.txt'.")
+
+
+def export_model(model, model_name, model_params):
+    joblib.dump(model, f"output/model_outputs/{formatted_datetime}_regr_{model_name}_model.pkl")
+    with open(f"output/model_outputs/{formatted_datetime}_regr_{model_name}_params.txt", "w") as f:
+        f.write(str(model_params))
 
 
 def train_models():
@@ -174,13 +184,13 @@ def train_models():
             ])
 
             # Define inner cross-validation for hyperparameter tuning
-            inner_cv = KFold(n_splits=5, shuffle=True, random_state=state)
+            inner_cv = KFold(n_splits=5, shuffle=True, random_state=42)
             grid_search = GridSearchCV(pipeline, param_grid=model_params[model_name], cv=inner_cv, scoring=scoring,
                                        refit='MSE')
             grid_search.fit(X, y)
 
-            # Extract best model
             best_model = grid_search.best_estimator_
+            best_model_parms = grid_search.best_params_
 
             # Perform outer cross-validation to evaluate performance
             outer_cv = KFold(n_splits=5, shuffle=True, random_state=42)
@@ -195,6 +205,8 @@ def train_models():
             msle = mean_squared_log_error(y, y_pred)
             mape = mean_absolute_percentage_error(y, y_pred)
             r2 = r2_score(y, y_pred)
+
+            export_model(best_model, model_name, best_model_parms)
 
             # Append results to list
             results_list.append({
