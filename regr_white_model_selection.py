@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import joblib
 import pandas as pd
 import numpy as np
@@ -133,23 +135,22 @@ def main():
 
 
 def export_models(top_n=3):
-    # Assuming grid_search, results, and results dataframe are available globally
 
-    # Get the top N models
     top_models = results.nsmallest(top_n, 'MSE')['Model']
+    current_datetime = datetime.now()
+    formatted_datetime = current_datetime.strftime("%Y%m%d_%H%M%S")
 
     for model_name in top_models:
-        model_row = results.loc[results['Model'] == model_name]
         best_model = grid_search.best_estimator_
         best_model_params = grid_search.best_params_
 
         # Export the best model
-        joblib.dump(best_model, f"output/model_outputs/regr_{model_name}_model_{model_row}.pkl")
+        joblib.dump(best_model, f"output/model_outputs/regr_{model_name}_model_{formatted_datetime}.pkl")
         print(f"Model 'regr_{model_name}' exported successfully.")
 
-        with open(f"output/model_outputs/regr_{model_name}_params_{model_row}.txt", "w") as f:
+        with open(f"output/model_outputs/regr_{model_name}_params_{formatted_datetime}.txt", "w") as f:
             f.write(str(best_model_params))
-        print(f"Model parameters saved to 'regr_{model_name}_params_{model_row}.txt'.")
+        print(f"Model parameters saved to 'regr_{model_name}_params_{formatted_datetime}.txt'.")
 
 
 def train_models():
@@ -159,12 +160,12 @@ def train_models():
     total_combinations = total_models * total_pca_components
 
     max_model_name_length = max(len(model_name) for model_name in models.keys())
-    model_progress_bar = tqdm(total=total_combinations, desc='Models', )
+    model_progress_bar = tqdm(total=total_combinations, desc='Models')
 
     for model_name, model in models.items():
         for pca_n_components in pca_params['pca__n_components']:
             padded_model_name = model_name.ljust(max_model_name_length)
-            model_progress_bar.set_description(f'Model: {padded_model_name}, PCA: {pca_n_components}')
+            model_progress_bar.set_description(f'Model: {padded_model_name} | PCA: {pca_n_components}')
             # Define pipeline with PCA and model
             pipeline = Pipeline([
                 ('scaler', StandardScaler()),
@@ -173,7 +174,7 @@ def train_models():
             ])
 
             # Define inner cross-validation for hyperparameter tuning
-            inner_cv = KFold(n_splits=5, shuffle=True, random_state=42)
+            inner_cv = KFold(n_splits=5, shuffle=True, random_state=state)
             grid_search = GridSearchCV(pipeline, param_grid=model_params[model_name], cv=inner_cv, scoring=scoring,
                                        refit='MSE')
             grid_search.fit(X, y)
@@ -227,7 +228,7 @@ def plot_best_model_info():
     plt.axis('off')
 
     # Save the plot as PNG
-    plt.savefig("output/regr_best_model_info.png", bbox_inches='tight', transparent=True)
+    plt.savefig("output/plots/regr_best_model_info.png", bbox_inches='tight', transparent=True)
 
 
 def plot_mse_pca():
