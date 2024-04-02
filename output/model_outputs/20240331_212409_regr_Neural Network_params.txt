@@ -1,1 +1,0 @@
-{'model__batch_size': 128, 'model__early_stopping': True, 'model__hidden_layer_sizes': (100, 50), 'model__learning_rate_init': 0.01, 'model__max_iter': 8000, 'model__n_iter_no_change': 30, 'model__solver': 'adam'}
