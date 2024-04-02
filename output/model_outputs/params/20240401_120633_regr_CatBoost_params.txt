@@ -1,0 +1,1 @@
+{'model__iterations': 4000, 'model__learning_rate': 0.1}

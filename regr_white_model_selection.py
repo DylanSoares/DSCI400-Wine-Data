@@ -86,11 +86,11 @@ model_params = {
     'XGBoost': {
         'model__n_estimators': [1000, 2000],
         'model__learning_rate': [0.01, 0.1],
-        'model__max_depth': [9, 11, 15],
+        'model__max_depth': [7, 9, 11],
         # 'model__min_child_weight': [1, 3, 5],
         # 'model__gamma': [0, 0.1, 0.2],
         'model__subsample': [0.5, 0.6],
-        'model__colsample_bytree': [0.5, 0.6],
+        'model__colsample_bytree': [0.6, 0.8, 0.9],
         # 'model__reg_alpha': [0, 0.1, 0.5],
         # 'model__reg_lambda': [1, 1.5, 2],
         # 'model__scale_pos_weight': [1, 2, 3]
@@ -100,8 +100,8 @@ model_params = {
         'model__learning_rate': [0.01, 0.1, 0.5]
     },
     'CatBoost': {
-        'model__iterations': [300, 500, 700, 1000],
-        'model__learning_rate': [0.01, 0.1, 0.5]
+        'model__iterations': [1000, 1500, 4000],
+        'model__learning_rate': [0.01, 0.1, 0.2]
     },
     'Neural Network': {
         'model__hidden_layer_sizes': [(50,100,50), (100,), (50, 50), (100, 50), (100,100)],
@@ -120,10 +120,6 @@ model_params = {
 scoring = {
     'MSE': 'neg_mean_squared_error',
     'MAE': 'neg_mean_absolute_error',
-    'R2': 'r2',
-    'Explained Variance': 'explained_variance',
-    'MAPE': 'neg_mean_absolute_percentage_error',
-    'RMSE': 'neg_root_mean_squared_error'
 }
 
 results_list = []
@@ -134,32 +130,31 @@ def main():
     plot_best_model_info()
     plot_mse_pca()
     plot_models_error()
-    export_best_model()
 
 
-def export_best_model():
-    best_model = grid_search.best_estimator_
-
-    # Define a regular expression pattern to match the model component name
-    pattern = r"\('model', (\w+)\("
-
-    # Use re.search to find the model component name in the string
-    match = re.search(pattern, str(best_model))
-    best_model_name = match.group(1)
-
-    best_model_params = grid_search.best_params_
-
-    joblib.dump(best_model, f"output/model_outputs/{formatted_datetime}_regr_{best_model_name}_model_BEST.pkl")
-    print(f"Best model '{formatted_datetime}_{best_model_name}' exported successfully.")
-
-    with open(f"output/model_outputs/{formatted_datetime}_regr_{best_model_name}_params_BEST.txt", "w") as f:
-        f.write(str(best_model_params))
-    print(f"Best model parameters saved to '{formatted_datetime}_regr_{best_model_name}_params.txt'.")
+# def export_best_model():
+#     best_model = grid_search.best_estimator_
+#
+#     # Define a regular expression pattern to match the model component name
+#     pattern = r"\('model', (\w+)\("
+#
+#     # Use re.search to find the model component name in the string
+#     match = re.search(pattern, str(best_model))
+#     best_model_name = match.group(1)
+#
+#     best_model_params = grid_search.best_params_
+#
+#     joblib.dump(best_model, f"output/model_outputs/models/{formatted_datetime}_regr_{best_model_name}_model_BEST.pkl")
+#     print(f"Best model '{formatted_datetime}_{best_model_name}' exported successfully.")
+#
+#     with open(f"output/model_outputs/params/{formatted_datetime}_regr_{best_model_name}_params_BEST.txt", "w") as f:
+#         f.write(str(best_model_params))
+#     print(f"Best model parameters saved to '{formatted_datetime}_regr_{best_model_name}_params.txt'.")
 
 
 def export_model(model, model_name, model_params):
-    joblib.dump(model, f"output/model_outputs/{formatted_datetime}_regr_{model_name}_model.pkl")
-    with open(f"output/model_outputs/{formatted_datetime}_regr_{model_name}_params.txt", "w") as f:
+    joblib.dump(model, f"output/model_outputs/models/{formatted_datetime}_regr_{model_name}_model.pkl")
+    with open(f"output/model_outputs/params/{formatted_datetime}_regr_{model_name}_params.txt", "w") as f:
         f.write(str(model_params))
 
 
@@ -240,7 +235,7 @@ def plot_best_model_info():
     plt.axis('off')
 
     # Save the plot as PNG
-    plt.savefig("output/plots/regr_best_model_info.png", bbox_inches='tight', transparent=True)
+    plt.savefig(f"output/plots/{formatted_datetime}_regr_best_model_info.png", bbox_inches='tight', transparent=True)
 
 
 def plot_mse_pca():
@@ -258,7 +253,7 @@ def plot_mse_pca():
     plt.ylabel('Model', color='white')
     plt.tick_params(axis='x', colors='white')
     plt.tick_params(axis='y', colors='white')
-    plt.savefig(f"output/plots/regr_mse_across_PCA.png", transparent=True, bbox_inches='tight')
+    plt.savefig(f"output/plots/{formatted_datetime}_regr_mse_across_PCA.png", transparent=True, bbox_inches='tight')
 
 
 def plot_models_error():
@@ -268,6 +263,8 @@ def plot_models_error():
     scaled_max_quality = scaled_quality.max()
 
     best_models_results = results.loc[results.groupby('Model')['MSE'].idxmin()]
+    # Im not entirely sure this is doing what I think it is
+
     heatmap_data = pd.DataFrame({
         'Model': best_models_results['Model'],
         'MAE': best_models_results['MAE'],
@@ -291,7 +288,7 @@ def plot_models_error():
     plt.xticks(ticks=[0.5, 1.5, 2.5, 3.5, 4.5, 5.5], labels=['MAE', 'MSE', 'RMSE', 'MSLE', 'MAPE', 'R^2'],
                color='white')
     plt.yticks(rotation=0, color='white')
-    plt.savefig(f"output/plots/regr_model_errors.png", transparent=True, bbox_inches='tight')
+    plt.savefig(f"output/plots/{formatted_datetime}_regr_model_errors.png", transparent=True, bbox_inches='tight')
 
 
 if __name__ == '__main__':
