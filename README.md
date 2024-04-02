@@ -5,7 +5,8 @@ Dylan Soares
 ## WIP README
 
 Project to create graphs for a presentation, train a model and generate predictions.
-The documentation for this is WIP or provided as in
+The documentation for this is WIP or provided as in. This project should of likely been done as a classification.
+Time being a critical aspect of this assignment, improvements could of been made. Expect mistakes.
 
 ## Dataset of Choice
 
