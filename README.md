@@ -24,14 +24,19 @@ Using only the white wines.
 **Using the packaged presentation models:**
 
 1. Extract `models.zip` from `/output/models/`
+2. To use the included modules, you must import the modules using the same version; otherwise, you will see warnings in the console.
+3. Use pip to install the modules from requirements.txt
+
+Note: RandomForest is corrupt.
 
 **Using the predictor UI:**
 
 1. Open the `/output/plots/<DATE_TIME>_regr_model_errors.png`
    > <DATE_TIME> will match with the model you wish to use
 2. Use the plot to decide which model(s) to use
-   > Generally, lower metrics is better for all but R^2\
+   > Generally, lower metrics are better for all but R^2\
 3. Run `white_wine_predictor.py`
 4. Select the chosen model(s) .pkl file, found in `/output/models/`
 5. Fill in the wine sample data
 6. Click `"Predict"` to make the final predictions.
+
